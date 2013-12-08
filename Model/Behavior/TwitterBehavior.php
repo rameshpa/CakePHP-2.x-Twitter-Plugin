@@ -134,6 +134,10 @@ class TwitterBehavior extends ModelBehavior {
 		return $this->_Twitter->updateStatus($status);
 	}
 
+	public function updateStatusWithMedia($Model, $status, $imageUrl) {
+		return $this->_Twitter->updateStatusWithMedia($status, $imageUrl);
+	}
+
 	public function destroyStatus($Model, $id) {
 		return $this->_Twitter->destroyStatus($id);
 	}

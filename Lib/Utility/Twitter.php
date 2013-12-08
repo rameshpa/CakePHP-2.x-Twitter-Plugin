@@ -460,7 +460,7 @@ class Twitter extends Object {
  * @param string $method The request method (post, delete, get, put)
  * @param string $twitterMethodUrl The url of the API method (without 'api.twitter.com'),
  * e.g. /1/trends.json
- * @param array() $params The body of the api request. It has to be an valid array()
+ * @param array() $params The body of the api request. except for update_with_media
  */
 	public function apiRequest($method, $twitterMethodUrl, $params) {
 		$request = array();
@@ -490,6 +490,12 @@ class Twitter extends Object {
 			if ($method == 'GET') {
 				$request['uri']['query'] = $params;
 			} else {
+				$request['body'] = $params;
+			}
+		}
+		else { // not an array for update_with_media
+			if(strpos($twitterMethodUrl, 'update_with_media') !== FALSE){
+				$request['header']['Content-Type'] = 'multipart/form-data; boundary="gc0p4Jq0M2Yt08jU534c0p"'; 
 				$request['body'] = $params;
 			}
 		}
@@ -733,6 +739,43 @@ class Twitter extends Object {
 
 			return json_decode($this->apiRequest('post', $this->endPoint('statuses/update'), $body), true);
 		}
+	}
+
+
+	/**
+ * Updates the authenticating user's status with media.
+ * Requires the multipart content-type compliant format for post data RFC 2388
+ * Must contain status and media form-data names in the Content-Disposition data
+ * Also must specify Content-Transfer-Encoding per Twitter
+ * @access public
+ * @return array()
+ * @param string $status The text wich should be posted as new status
+ * @param string $imagePath Path to the image you want to post
+ */
+	public function updateStatusWithMedia($status, $imagePath ) {
+		if ($status == null || $status == '') {
+			$status = __(' ');
+		}
+
+		if (strlen($status) > 100){ // Twitter adds about 30 odd length URL to image (pic.twitter.com/<uid>)
+			$status = substr($status, 0, 97) . '...';
+		}
+			 
+		$contents = file_get_contents($imagePath);
+		$multipartContents = base64_encode($contents);
+
+		$multipartBody = 
+				"--gc0p4Jq0M2Yt08jU534c0p\r\n" . //random boundary
+				"Content-Disposition: form-data; name=\"status\"\r\n\r\n" . 
+				$status . "\r\n" .
+				"--gc0p4Jq0M2Yt08jU534c0p\r\n" .
+				"Content-Disposition: form-data; name=\"media[]\"\r\n" . //; filename=\"snapshot.png\" \r\n" .
+				"Content-Transfer-Encoding: base64\r\n\r\n" .
+				$multipartContents . "\r\n" .
+				"--gc0p4Jq0M2Yt08jU534c0p--"
+				 ;
+
+		return json_decode($this->apiRequest('post', $this->endPoint('statuses/update_with_media'), $multipartBody), true);
 	}
 
 /**

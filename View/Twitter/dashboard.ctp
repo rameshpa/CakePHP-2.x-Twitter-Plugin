@@ -6,6 +6,7 @@
 		echo $this->Html->link($this->Html->image($credentialCheck['profile_image_url'], array('alt' => $credentialCheck['screen_name'])), 'http://twitter.com/'.$credentialCheck['screen_name'], array('target' => '_blank', 'escape' => false));
 		echo $this->Form->create('Twitter');
 		echo $this->Form->input('Twitter.status', array('label' => 'Update Twitter Status'));
+		echo $this->Form->input('Twitter.image', array('label' => 'Optional image url'));
 		echo $this->Form->end('Submit');
 	} 
 

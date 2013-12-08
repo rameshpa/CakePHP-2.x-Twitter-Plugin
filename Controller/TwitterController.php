@@ -105,12 +105,22 @@ class TwitterController extends AppController {
  * 
  */
 	public function dashboard() {
-		if (!empty($this->request->data['Twitter']['status'])) {
+		if (!empty($this->request->data['Twitter']['status']) &&
+			empty($this->request->data['Twitter']['image']) 
+			) {
 			if ($this->Twitter->updateStatus($this->request->data['Twitter']['status'])) {
 				$this->Session->setFlash('Status updated.');
 			} else {	
 				$this->Session->setFlash('Status update failed');
 			}			
+		}
+		else if(!empty($this->request->data['Twitter']['status']) &&
+		 !empty($this->request->data['Twitter']['image'] ) ) {
+			if ($this->Twitter->updateStatusWithMedia($this->request->data['Twitter']['status'], $this->request->data['Twitter']['image']  ) ) {
+				$this->Session->setFlash('Successfuly posted snapshot to Twitter.');
+			} else {	
+				$this->Session->setFlash('Post to Twitter failed');
+			}	
 		}
 		
 		
